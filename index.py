@@ -58,17 +58,11 @@ while True:
 				break
 			else:
 				print("Nome invalido. Erro! Tente novamente")
-
+#>
 		while True:
-			tipo = input("Diga o tipo do ativo: ").strip()
-			if tipo !="":
-				break
-			else:
-				print("Tipo invalido. Erro! Tente novamente")
+			print("\nTipos de ativos:")
 
-			print("\nTipos disponiveis.")
-
-			for idtipo, nometipo, in tipos_ativos.items():
+			for idtipo, nometipo in tipos_ativos.items():
 				print(idtipo, "-", nometipo)
 
 			tipo_input = input("Digite o ID ou o nome do tipo: ").strip().lower()
@@ -79,14 +73,19 @@ while True:
 				if tipo_id in tipos_ativos:
 					tipo = tipos_ativos[tipo_id]
 					break
+
 			else:
 				for valor in tipos_ativos.values():
-					if tipo_input == valor.lower():
-						tipo = valor
+					if tipos_ativos == valor.lower():
+						tipos = valor
 						break
 				else:
 					print("Tipo invalido. Erro! Tente novamente.")
+					continue
+				break
+			print("Tipo invalido. Erro! Tente novamente")
 
+#<
 
 		while True:
 			local = input("Diga o local do ativo: ")
