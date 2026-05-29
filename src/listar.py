@@ -1,19 +1,42 @@
-def listar_ativos(ativos):
+from database.connection import conectar
 
-	print("\n" * 3)
-	print("Ativos cadastrados.")
+def listar_ativos():
+
+	conexao = conectar()
+
+	cursor = conexao.cursor()
+
+	cursor.execute("""
+
+	SELECT
+		id,
+		nome,
+		tipo,
+		local,
+		ultimo_usuario
+
+	FROM ativos
+
+	""")
+
+	ativos = cursor.fetchall()
 
 	if len(ativos) == 0:
+
 		print("Nenhum ativo cadastrado.")
 
 	else:
 
-		for idativo, infos in ativos.items():
+		print("\nATIVOS:\n")
 
-			print("\n" * 2)
-			print("ID:", idativo)
-			print("Nome:", infos['nome'])
-			print("Tipo:", infos['tipo'])
-			print("Local:", infos['local'])
-			print("Ultimo usuario:", infos['ultimousuario'])
-			print("\n" * 2)
+		for ativo in ativos:
+
+			print("ID:", ativo[0])
+			print("Nome:", ativo[1])
+			print("Tipo:", ativo[2])
+			print("Local:", ativo[3])
+			print("Último usuário:", ativo[4])
+
+			print("-" * 30)
+
+	conexao.close()

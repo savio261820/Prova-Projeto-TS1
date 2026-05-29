@@ -1,55 +1,47 @@
-from src.dados import tipos_ativos
+from database.connection import conectar
 
-def cadastrar_ativo(ativos):
+tipos_ativos = {
+	1: "Servidores",
+	2: "Workstations",
+	3: "Aparelhos",
+	4: "Impressoras"
+}
 
-	if len(ativos) == 0:
-		idativo = 1
-	else:
-		idativo = max(ativos) + 1
+def cadastrar_ativo():
 
-	print("Cadastrar novo(s) ativo(s).")
+	conexao = conectar()
 
-	# USUARIO
+	cursor = conexao.cursor()
+
+	print("Cadastrar novo ativo.")
+
 	while True:
 
-		usuario = input(
-			"Qual o seu nome(usuario)?: "
-		).strip()
+		usuario = input("Qual o seu nome(usuario)?: ").strip()
 
 		if usuario != "":
 			break
 
-		else:
-			print(
-				"Nome de usuario invalido."
-			)
+		print("Nome inválido. Erro! Tente novamente.")
 
-	# NOME
 	while True:
 
-		nome = input(
-			"Diga o nome do ativo: "
-		).strip()
+		nome = input("Diga o nome do ativo: ").strip()
 
 		if nome != "":
 			break
 
-		else:
-			print("Nome invalido.")
+		print("Nome inválido. Erro! Tente novamente.")
 
-	# TIPO
 	while True:
 
-		print("\nTipos de ativos:")
+		print("\nTipos disponíveis:\n")
 
 		for idtipo, nometipo in tipos_ativos.items():
 			print(idtipo, "-", nometipo)
 
-		tipo_input = input(
-			"Digite o ID ou o nome do tipo: "
-		).strip().lower()
+		tipo_input = input("Digite o ID ou nome: ").strip().lower()
 
-		# POR ID
 		if tipo_input.isdigit():
 
 			tipo_id = int(tipo_input)
@@ -58,7 +50,6 @@ def cadastrar_ativo(ativos):
 				tipo = tipos_ativos[tipo_id]
 				break
 
-		# POR NOME
 		else:
 
 			for valor in tipos_ativos.values():
@@ -68,32 +59,42 @@ def cadastrar_ativo(ativos):
 					break
 
 			else:
-				print("Tipo invalido.")
+				print("Tipo inválido.")
 				continue
 
 			break
 
-		print("Tipo invalido.")
+		print("Tipo inválido.")
 
-	# LOCAL
 	while True:
 
-		local = input(
-			"Diga o local do ativo: "
-		).strip()
+		local = input("Diga o local do ativo: ").strip()
 
 		if local != "":
 			break
 
-		else:
-			print("Local invalido.")
+		print("Local inválido.")
 
-	# SALVAR
-	ativos[idativo] = {
-		"nome": nome,
-		"tipo": tipo,
-		"local": local,
-		"ultimousuario": usuario
-	}
+	cursor.execute("""
 
-	print("Ativo cadastrado com id", idativo)
+	INSERT INTO ativos (
+		nome,
+		tipo,
+		local,
+		ultimo_usuario
+	)
+
+	VALUES (?, ?, ?, ?)
+
+	""", (
+		nome,
+		tipo,
+		local,
+		usuario
+	))
+
+	conexao.commit()
+
+	print("\nAtivo cadastrado com sucesso.")
+
+	conexao.close()
