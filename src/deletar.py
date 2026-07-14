@@ -1,91 +1,59 @@
-from database.connection import conectar
+class DeletarAtivo:
 
-def deletar_ativo():
+	def __init__(self, repo):
 
-	conexao = conectar()
-	cursor = conexao.cursor()
-	cursor.execute("""
+		self.repo = repo
 
-	SELECT
-		id,
-		nome
+	def executar(self):
 
-	FROM ativos
+		ativos = self.repo.listar_ids_nomes()
 
-	ORDER BY id
+		if len(ativos) == 0:
 
-	""")
+			print("\nNenhum ativo cadastrado.")
 
-	ativos = cursor.fetchall()
+			return
 
-	if len(ativos) == 0:
+		print("\nATIVOS DISPONÍVEIS:\n")
 
-		print("\nNenhum ativo cadastrado.")
+		for ativo in ativos:
 
-		conexao.close()
+			print(
+				"ID:",
+				ativo[0],
+				"-",
+				ativo[1]
+			)
 
-		return
+		while True:
 
-	print("\nATIVOS DISPONÍVEIS:\n")
+			try:
 
-	for ativo in ativos:
+				iddeletar = int(input("\nDigite o ID do ativo que deseja deletar: "))
 
-		print(
-			"ID:",
-			ativo[0],
-			"-",
-			ativo[1]
-		)
+				ativo = self.repo.buscar_por_id(iddeletar)
 
-	while True:
+				if ativo:
+					break
 
-		try:
+				else:
+					print("ID não encontrado.")
 
-			iddeletar = int(input("\nDigite o ID do ativo que deseja deletar: "))
+			except ValueError:
+				print("Digite apenas números.")
 
-			cursor.execute("""
+		print("\nVocê deseja deletar o ativo:", ativo.nome)
 
-			SELECT id, nome
+		confirmacao = input("Digite S para confirmar: ").strip().lower()
 
-			FROM ativos
+		if confirmacao == "s":
 
-			WHERE id = ?
+			self.repo.deletar(iddeletar)
 
-			""", (iddeletar,))
+			print("\nAtivo deletado com sucesso.")
 
-			ativo = cursor.fetchone()
+			print("As vulnerabilidades associadas também foram removidas.")
 
-			if ativo:
-				break
+		else:
 
-			else:
-				print("ID não encontrado.")
-
-		except ValueError:
-			print("Digite apenas números.")
-
-	print("\nVocê deseja deletar o ativo:",ativo[1])
-
-	confirmacao = input("Digite S para confirmar: ").strip().lower()
-
-	if confirmacao == "s":
-
-		cursor.execute("""
-
-		DELETE FROM ativos
-
-		WHERE id = ?
-
-		""", (iddeletar,))
-
-		conexao.commit()
-
-		print("\nAtivo deletado com sucesso.")
-
-		print("As vulnerabilidades associadas também foram removidas.")
-
-	else:
-
-		print("\nOperação cancelada.")
-
-	conexao.close()
+			print("\nOperação cancelada.")

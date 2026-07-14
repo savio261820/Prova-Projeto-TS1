@@ -1,100 +1,78 @@
-from database.connection import conectar
+from src.modelo import Ativo
+from src.dados import tipos_ativos
 
-tipos_ativos = {
-	1: "Servidores",
-	2: "Workstations",
-	3: "Aparelhos",
-	4: "Impressoras"
-}
 
-def cadastrar_ativo():
+class CadastrarAtivo:
 
-	conexao = conectar()
+	def __init__(self, repo):
 
-	cursor = conexao.cursor()
+		self.repo = repo
 
-	print("Cadastrar novo ativo.")
+	def executar(self):
 
-	while True:
+		print("Cadastrar novo ativo.")
 
-		usuario = input("Qual o seu nome(usuario)?: ").strip()
+		while True:
 
-		if usuario != "":
-			break
+			usuario = input("Qual o seu nome(usuario)?: ").strip()
 
-		print("Nome inválido. Erro! Tente novamente.")
-
-	while True:
-
-		nome = input("Diga o nome do ativo: ").strip()
-
-		if nome != "":
-			break
-
-		print("Nome inválido. Erro! Tente novamente.")
-
-	while True:
-
-		print("\nTipos disponíveis:\n")
-
-		for idtipo, nometipo in tipos_ativos.items():
-			print(idtipo, "-", nometipo)
-
-		tipo_input = input("Digite o ID ou nome: ").strip().lower()
-
-		if tipo_input.isdigit():
-
-			tipo_id = int(tipo_input)
-
-			if tipo_id in tipos_ativos:
-				tipo = tipos_ativos[tipo_id]
+			if usuario != "":
 				break
 
-		else:
+			print("Nome inválido. Erro! Tente novamente.")
 
-			for valor in tipos_ativos.values():
+		while True:
 
-				if tipo_input == valor.lower():
-					tipo = valor
+			nome = input("Diga o nome do ativo: ").strip()
+
+			if nome != "":
+				break
+
+			print("Nome inválido. Erro! Tente novamente.")
+
+		while True:
+
+			print("\nTipos disponíveis:\n")
+
+			for idtipo, nometipo in tipos_ativos.items():
+				print(idtipo, "-", nometipo)
+
+			tipo_input = input("Digite o ID ou nome: ").strip().lower()
+
+			if tipo_input.isdigit():
+
+				tipo_id = int(tipo_input)
+
+				if tipo_id in tipos_ativos:
+					tipo = tipos_ativos[tipo_id]
 					break
 
 			else:
-				print("Tipo inválido.")
-				continue
 
-			break
+				for valor in tipos_ativos.values():
 
-		print("Tipo inválido.")
+					if tipo_input == valor.lower():
+						tipo = valor
+						break
 
-	while True:
+				else:
+					print("Tipo inválido.")
+					continue
 
-		local = input("Diga o local do ativo: ").strip()
+				break
 
-		if local != "":
-			break
+			print("Tipo inválido.")
 
-		print("Local inválido.")
+		while True:
 
-	cursor.execute("""
+			local = input("Diga o local do ativo: ").strip()
 
-	INSERT INTO ativos (
-		nome,
-		tipo,
-		local,
-		ultimo_usuario
-	)
+			if local != "":
+				break
 
-	VALUES (?, ?, ?, ?)
+			print("Local inválido.")
 
-	""", (
-		nome,
-		tipo,
-		local,
-		usuario
-	))
+		ativo = Ativo(nome=nome, tipo=tipo, local=local, ultimo_usuario=usuario)
+		self.repo.salvar(ativo)
 
-	conexao.commit()
-
-	print("\nAtivo cadastrado com sucesso.")
-
-	conexao.close()
+		print("\nAtivo cadastrado com sucesso.")

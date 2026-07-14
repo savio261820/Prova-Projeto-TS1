@@ -1,155 +1,113 @@
-from database.connection import conectar
 from src.dados import tipos_ativos
 
-def editar_ativo():
 
-	conexao = conectar()
+class EditarAtivo:
 
-	cursor = conexao.cursor()
+	def __init__(self, repo):
 
-	cursor.execute("""
+		self.repo = repo
 
-	SELECT
-		id,
-		nome
+	def executar(self):
 
-	FROM ativos
+		ativos = self.repo.listar_ids_nomes()
 
-	""")
+		if len(ativos) == 0:
 
-	ativos = cursor.fetchall()
+			print("Nenhum ativo encontrado.")
 
-	if len(ativos) == 0:
+			return
 
-		print("Nenhum ativo encontrado.")
+		print("\nAtivos disponíveis:\n")
 
-		conexao.close()
+		for ativo in ativos:
+			print("ID:", ativo[0], "-", ativo[1])
 
-		return
+		while True:
 
-	print("\nAtivos disponíveis:\n")
+			try:
 
-	for ativo in ativos:
-		print("ID:", ativo[0], "-", ativo[1])
-
-	while True:
-
-		try:
-
-			ideditar = int(
-				input(
-					"Digite o ID do ativo que deseja editar: "
+				ideditar = int(
+					input(
+						"Digite o ID do ativo que deseja editar: "
+					)
 				)
-			)
 
-			cursor.execute("""
+				ativo = self.repo.buscar_por_id(ideditar)
 
-			SELECT
-				id,
-				nome,
-				tipo,
-				local,
-				ultimo_usuario
+				if ativo:
+					break
 
-			FROM ativos
+				else:
+					print("ID não encontrado.")
 
-			WHERE id = ?
+			except ValueError:
+				print("Digite apenas números.")
 
-			""", (ideditar,))
+		print("\nEditando ativo:", ativo.nome)
 
-			ativo = cursor.fetchone()
+		novo_nome = input("Novo nome (ENTER para manter): ").strip()
 
-			if ativo:
-				break
+		if novo_nome == "":
+			novo_nome = ativo.nome
 
-			else:
-				print("ID não encontrado.")
+		print("\nTipos disponíveis:\n")
 
-		except ValueError:
-			print("Digite apenas números.")
+		for idtipo, nometipo in tipos_ativos.items():
+			print(idtipo, "-", nometipo)
 
-	print("\nEditando ativo:", ativo[1])
+		novo_tipo = input("Novo tipo (ENTER para manter): ").strip().lower()
 
-	novo_nome = input("Novo nome (ENTER para manter): ").strip()
+		if novo_tipo == "":
 
-	if novo_nome == "":
-		novo_nome = ativo[1]
-
-	print("\nTipos disponíveis:\n")
-
-	for idtipo, nometipo in tipos_ativos.items():
-		print(idtipo, "-", nometipo)
-
-	novo_tipo = input("Novo tipo (ENTER para manter): ").strip().lower()
-
-	if novo_tipo == "":
-
-		novo_tipo = ativo[2]
-
-	else:
-
-		if novo_tipo.isdigit():
-
-			tipo_id = int(novo_tipo)
-
-			if tipo_id in tipos_ativos:
-				novo_tipo = tipos_ativos[tipo_id]
-
-			else:
-				novo_tipo = ativo[2]
+			novo_tipo = ativo.tipo
 
 		else:
 
-			encontrado = False
+			if novo_tipo.isdigit():
 
-			for valor in tipos_ativos.values():
+				tipo_id = int(novo_tipo)
 
-				if novo_tipo == valor.lower():
-					novo_tipo = valor
-					encontrado = True
-					break
+				if tipo_id in tipos_ativos:
+					novo_tipo = tipos_ativos[tipo_id]
 
-			if encontrado == False:
-				novo_tipo = ativo[2]
+				else:
+					novo_tipo = ativo.tipo
 
-	novo_local = input(
-		"Novo local (ENTER para manter): "
-	).strip()
+			else:
 
-	if novo_local == "":
-		novo_local = ativo[3]
+				encontrado = False
 
-	while True:
+				for valor in tipos_ativos.values():
 
-		usuario = input("Quem realizou esta alteração?: ").strip()
+					if novo_tipo == valor.lower():
+						novo_tipo = valor
+						encontrado = True
+						break
 
-		if usuario != "":
-			break
+				if encontrado == False:
+					novo_tipo = ativo.tipo
 
-		print("Nome inválido.")
+		novo_local = input(
+			"Novo local (ENTER para manter): "
+		).strip()
 
-	cursor.execute("""
+		if novo_local == "":
+			novo_local = ativo.local
 
-	UPDATE ativos
+		while True:
 
-	SET
-		nome = ?,
-		tipo = ?,
-		local = ?,
-		ultimo_usuario = ?
+			usuario = input("Quem realizou esta alteração?: ").strip()
 
-	WHERE id = ?
+			if usuario != "":
+				break
 
-	""", (
-		novo_nome,
-		novo_tipo,
-		novo_local,
-		usuario,
-		ideditar
-	))
+			print("Nome inválido.")
 
-	conexao.commit()
+		ativo.nome = novo_nome
+		ativo.tipo = novo_tipo
+		ativo.local = novo_local
+		ativo.ultimo_usuario = usuario
 
-	print("\nAtivo atualizado com sucesso.")
+		self.repo.atualizar(ativo)
 
-	conexao.close()
+		print("\nAtivo atualizado com sucesso.")

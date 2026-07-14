@@ -1,203 +1,108 @@
-from database.connection import conectar
+class BuscarAtivo:
 
-def buscar_ativos():
+	def __init__(self, repo):
 
-	conexao = conectar()
+		self.repo = repo
 
-	cursor = conexao.cursor()
+	def executar(self):
 
-	print("\nBUSCAR ATIVOS\n")
+		print("\nBUSCAR ATIVOS\n")
 
-	print("1.\tBuscar por ID")
-	print("2.\tBuscar por nome")
-	print("3.\tBuscar por usuário")
-	print("4.\tBuscar por local")
-
-	while True:
-
-		try:
-			escolha = int(input("Escolha uma opção: "))
-			if escolha in [1,2,3,4]:
-				break
-
-			print("Opção inválida.")
-
-		except ValueError:
-			print("Digite apenas números.")
-
-	if escolha == 1:
-
-		cursor.execute("""
-
-		SELECT DISTINCT id
-
-		FROM ativos
-
-		""")
-
-		ids = cursor.fetchall()
-
-		print("\nIDs disponíveis:\n")
-
-		for valor in ids:
-			print(valor[0])
+		print("1.\tBuscar por ID")
+		print("2.\tBuscar por nome")
+		print("3.\tBuscar por usuário")
+		print("4.\tBuscar por local")
 
 		while True:
 
 			try:
-				id_busca = int(input("\nDigite o ID: "))
-				break
+				escolha = int(input("Escolha uma opção: "))
+				if escolha in [1,2,3,4]:
+					break
+
+				print("Opção inválida.")
 
 			except ValueError:
 				print("Digite apenas números.")
 
-		cursor.execute("""
+		if escolha == 1:
 
-		SELECT
-			id,
-			nome,
-			tipo,
-			local,
-			ultimo_usuario
+			ids = self.repo.listar_ids_disponiveis()
 
-		FROM ativos
+			print("\nIDs disponíveis:\n")
 
-		WHERE id = ?
+			for valor in ids:
+				print(valor)
 
-		""", (id_busca,))
+			while True:
 
-		resultados = cursor.fetchall()
+				try:
+					id_busca = int(input("\nDigite o ID: "))
+					break
 
-	elif escolha == 2:
+				except ValueError:
+					print("Digite apenas números.")
 
-		cursor.execute("""
+			resultados = self.repo.buscar_por_id(id_busca)
 
-		SELECT DISTINCT nome
+			if resultados:
+				resultados = [resultados]
+			else:
+				resultados = []
 
-		FROM ativos
+		elif escolha == 2:
 
-		ORDER BY nome
+			nomes = self.repo.listar_nomes_disponiveis()
 
-		""")
+			print("\nNomes disponíveis:\n")
 
-		nomes = cursor.fetchall()
+			for valor in nomes:
+				print(valor)
 
-		print("\nNomes disponíveis:\n")
+			nome_busca = input("\nDigite o nome: ").strip()
 
-		for valor in nomes:
-			print(valor[0])
+			resultados = self.repo.buscar_por_nome(nome_busca)
 
-		nome_busca = input("\nDigite o nome: ").strip()
+		elif escolha == 3:
 
-		cursor.execute("""
+			usuarios = self.repo.listar_usuarios_disponiveis()
 
-		SELECT
-			id,
-			nome,
-			tipo,
-			local,
-			ultimo_usuario
+			print("\nUsuários disponíveis:\n")
 
-		FROM ativos
+			for valor in usuarios:
+				print(valor)
 
-		WHERE LOWER(nome) = LOWER(?)
+			usuario_busca = input("\nDigite o usuário: ").strip()
 
-		""", (nome_busca,))
+			resultados = self.repo.buscar_por_usuario(usuario_busca)
 
-		resultados = cursor.fetchall()
+		elif escolha == 4:
 
-	elif escolha == 3:
+			locais = self.repo.listar_locais_disponiveis()
 
-		cursor.execute("""
+			print("\nLocais disponíveis:\n")
 
-		SELECT DISTINCT ultimo_usuario
+			for valor in locais:
+				print(valor)
 
-		FROM ativos
+			local_busca = input("\nDigite o local: ").strip()
 
-		ORDER BY ultimo_usuario
+			resultados = self.repo.buscar_por_local(local_busca)
 
-		""")
+		if len(resultados) == 0:
 
-		usuarios = cursor.fetchall()
+			print("\nNenhum ativo encontrado.")
 
-		print("\nUsuários disponíveis:\n")
+		else:
 
-		for valor in usuarios:
-			print(valor[0])
+			print("\nRESULTADOS:\n")
 
-		usuario_busca = input("\nDigite o usuário: ").strip()
+			for ativo in resultados:
 
-		cursor.execute("""
+				print("ID:", ativo.id)
+				print("Nome:", ativo.nome)
+				print("Tipo:", ativo.tipo)
+				print("Local:", ativo.local)
+				print("Último usuário:", ativo.ultimo_usuario)
 
-		SELECT
-			id,
-			nome,
-			tipo,
-			local,
-			ultimo_usuario
-
-		FROM ativos
-
-		WHERE LOWER(ultimo_usuario) = LOWER(?)
-
-		""", (usuario_busca,))
-
-		resultados = cursor.fetchall()
-
-	elif escolha == 4:
-
-		cursor.execute("""
-
-		SELECT DISTINCT local
-
-		FROM ativos
-
-		ORDER BY local
-
-		""")
-
-		locais = cursor.fetchall()
-
-		print("\nLocais disponíveis:\n")
-
-		for valor in locais:
-			print(valor[0])
-
-		local_busca = input("\nDigite o local: ").strip()
-
-		cursor.execute("""
-
-		SELECT
-			id,
-			nome,
-			tipo,
-			local,
-			ultimo_usuario
-
-		FROM ativos
-
-		WHERE LOWER(local) = LOWER(?)
-
-		""", (local_busca,))
-
-		resultados = cursor.fetchall()
-
-	if len(resultados) == 0:
-
-		print("\nNenhum ativo encontrado.")
-
-	else:
-
-		print("\nRESULTADOS:\n")
-
-		for ativo in resultados:
-
-			print("ID:", ativo[0])
-			print("Nome:", ativo[1])
-			print("Tipo:", ativo[2])
-			print("Local:", ativo[3])
-			print("Último usuário:", ativo[4])
-
-			print("-" * 30)
-
-	conexao.close()
+				print("-" * 30)

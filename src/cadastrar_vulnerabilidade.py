@@ -1,243 +1,192 @@
-from database.connection import conectar
+from src.modelo import Vulnerabilidade
+from src.dados import severidades, status_lista
 
-severidades = [
-	"Baixa",
-	"Média",
-	"Alta",
-	"Crítica"
-]
 
-status_lista = [
-	"Aberta",
-	"Em tratamento",
-	"Corrigida",
-	"Aceita como risco"
-]
+class CadastrarVulnerabilidade:
 
-def cadastrar_vulnerabilidade():
+	def __init__(self, ativo_repo, vuln_repo):
 
-	conexao = conectar()
-	cursor = conexao.cursor()
-	cursor.execute("""
+		self.ativo_repo = ativo_repo
+		self.vuln_repo = vuln_repo
 
-	SELECT
-		id,
-		nome
+	def executar(self):
 
-	FROM ativos
+		ativos = self.ativo_repo.listar_ids_nomes()
 
-	ORDER BY id
+		if len(ativos) == 0:
 
-	""")
+			print("\nNenhum ativo cadastrado.")
 
-	ativos = cursor.fetchall()
+			return
 
-	if len(ativos) == 0:
+		print("\nATIVOS:\n")
 
-		print("\nNenhum ativo cadastrado.")
+		ativos_dict = {}
 
-		conexao.close()
+		for ativo in ativos:
 
-		return
+			ativos_dict[ativo[0]] = ativo[1]
 
-	print("\nATIVOS:\n")
+			print(
+				"ID:",
+				ativo[0],
+				"-",
+				ativo[1]
+			)
 
-	ativos_dict = {}
+		print("\nDigite 0 para cancelar.")
 
-	for ativo in ativos:
+		while True:
 
-		ativos_dict[ativo[0]] = ativo[1]
+			entrada = input(
+				"\nDigite o ID do ativo: "
+			).strip()
 
-		print(
-			"ID:",
-			ativo[0],
-			"-",
-			ativo[1]
+			if entrada == "0":
+
+				print("\nOperação cancelada.")
+
+				return
+
+			if not entrada.isdigit():
+
+				print("\nDigite apenas números.")
+
+				continue
+
+			ativo_id = int(entrada)
+
+			if ativo_id in ativos_dict:
+				break
+
+			print("\nID inválido.")
+
+		while True:
+
+			descricao = input("Descrição da vulnerabilidade: ").strip()
+
+			if descricao.lower() == "0":
+
+				print("\nOperação cancelada.")
+
+				return
+
+			if descricao != "":
+				break
+
+			print("Descrição inválida.")
+
+		while True:
+
+			categoria = input("Categoria/Tipo: ").strip()
+
+			if categoria.lower() == "0":
+
+				print("\nOperação cancelada.")
+
+				return
+
+			if categoria != "":
+				break
+
+			print("Categoria inválida.")
+
+		print("\nSeveridades:\n")
+
+		for i, valor in enumerate(severidades, start=1):
+
+			print(i, "-", valor)
+
+		print("0 - Cancelar")
+
+		while True:
+
+			entrada = input("Escolha a severidade: ").strip()
+
+			if entrada == "0":
+
+				print("\nOperação cancelada.")
+
+				return
+
+			if not entrada.isdigit():
+
+				print("\nDigite apenas números.")
+
+				continue
+
+			escolha = int(entrada)
+
+			if escolha in [1,2,3,4]:
+
+				severidade = severidades[
+					escolha - 1
+				]
+
+				break
+
+			print("Opção inválida.")
+
+		print("\nStatus:\n")
+
+		for i, valor in enumerate(status_lista, start=1):
+
+			print(i, "-", valor)
+
+		print("0 - Cancelar")
+
+		while True:
+
+			entrada = input("Escolha o status: ").strip()
+
+			if entrada == "0":
+
+				print("\nOperação cancelada.")
+
+				return
+
+			if not entrada.isdigit():
+
+				print("\nDigite apenas números.")
+
+				continue
+
+			escolha = int(entrada)
+
+			if escolha in [1,2,3,4]:
+
+				status = status_lista[
+					escolha - 1
+				]
+
+				break
+
+			print("Opção inválida.")
+
+		while True:
+
+			usuario = input("Seu nome: ").strip()
+
+			if usuario == "0":
+
+				print("\nOperação cancelada.")
+
+				return
+
+			if usuario != "":
+				break
+
+			print("Nome inválido.")
+
+		vuln = Vulnerabilidade(
+			ativo_id=ativo_id,
+			descricao=descricao,
+			categoria=categoria,
+			severidade=severidade,
+			status=status,
+			usuario=usuario
 		)
 
-	print("\nDigite 0 para cancelar.")
+		self.vuln_repo.salvar(vuln)
 
-	while True:
-
-		entrada = input(
-			"\nDigite o ID do ativo: "
-		).strip()
-
-		if entrada == "0":
-
-			print("\nOperação cancelada.")
-
-			conexao.close()
-
-			return
-
-		if not entrada.isdigit():
-
-			print("\nDigite apenas números.")
-
-			continue
-
-		ativo_id = int(entrada)
-
-		if ativo_id in ativos_dict:
-			break
-
-		print("\nID inválido.")
-
-	while True:
-
-		descricao = input("Descrição da vulnerabilidade: ").strip()
-
-		if descricao.lower() == "0":
-
-			print("\nOperação cancelada.")
-
-			conexao.close()
-
-			return
-
-		if descricao != "":
-			break
-
-		print("Descrição inválida.")
-
-	while True:
-
-		categoria = input("Categoria/Tipo: ").strip()
-
-		if categoria.lower() == "0":
-
-			print("\nOperação cancelada.")
-
-			conexao.close()
-
-			return
-
-		if categoria != "":
-			break
-
-		print("Categoria inválida.")
-
-	print("\nSeveridades:\n")
-
-	for i, valor in enumerate(severidades, start=1):
-
-		print(i, "-", valor)
-
-	print("0 - Cancelar")
-
-	while True:
-
-		entrada = input("Escolha a severidade: ").strip()
-
-		if entrada == "0":
-
-			print("\nOperação cancelada.")
-
-			conexao.close()
-
-			return
-
-		if not entrada.isdigit():
-
-			print("\nDigite apenas números.")
-
-			continue
-
-		escolha = int(entrada)
-
-		if escolha in [1,2,3,4]:
-
-			severidade = severidades[
-				escolha - 1
-			]
-
-			break
-
-		print("Opção inválida.")
-
-	# STATUS
-	print("\nStatus:\n")
-
-	for i, valor in enumerate(status_lista, start=1):
-
-		print(i, "-", valor)
-
-	print("0 - Cancelar")
-
-	while True:
-
-		entrada = input("Escolha o status: ").strip()
-
-		if entrada == "0":
-
-			print("\nOperação cancelada.")
-
-			conexao.close()
-
-			return
-
-		if not entrada.isdigit():
-
-			print("\nDigite apenas números.")
-
-			continue
-
-		escolha = int(entrada)
-
-		if escolha in [1,2,3,4]:
-
-			status = status_lista[
-				escolha - 1
-			]
-
-			break
-
-		print("Opção inválida.")
-
-	while True:
-
-		usuario = input("Seu nome: ").strip()
-
-		if usuario == "0":
-
-			print("\nOperação cancelada.")
-
-			conexao.close()
-
-			return
-
-		if usuario != "":
-			break
-
-		print("Nome inválido.")
-
-	cursor.execute("""
-
-	INSERT INTO vulnerabilidades (
-
-		ativo_id,
-		descricao,
-		categoria,
-		severidade,
-		status,
-		usuario
-
-	)
-
-	VALUES (?, ?, ?, ?, ?, ?)
-
-	""", (
-		ativo_id,
-		descricao,
-		categoria,
-		severidade,
-		status,
-		usuario
-	))
-
-	conexao.commit()
-
-	print("\nVulnerabilidade cadastrada com sucesso.")
-
-	conexao.close()
+		print("\nVulnerabilidade cadastrada com sucesso.")

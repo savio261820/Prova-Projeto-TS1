@@ -1,112 +1,74 @@
-from database.connection import conectar
+class ListarVulnerabilidades:
 
-def listar_vulnerabilidades():
+	def __init__(self, ativo_repo, vuln_repo):
 
-	conexao = conectar()
-	cursor = conexao.cursor()
-	cursor.execute("""
+		self.ativo_repo = ativo_repo
+		self.vuln_repo = vuln_repo
 
-	SELECT
-		id,
-		nome
+	def executar(self):
 
-	FROM ativos
+		ativos = self.ativo_repo.listar_ids_nomes()
 
-	ORDER BY id
+		if len(ativos) == 0:
 
-	""")
-
-	ativos = cursor.fetchall()
-
-	if len(ativos) == 0:
-
-		print("\nNenhum ativo cadastrado.")
-
-		conexao.close()
-
-		return
-
-	print("\nATIVOS:\n")
-
-	for ativo in ativos:
-
-		print(
-			"ID:",
-			ativo[0],
-			"-",
-			ativo[1]
-		)
-
-	print("\nDigite 0 para cancelar.")
-
-	while True:
-
-		entrada = input("\nDigite o ID do ativo: ").strip()
-
-		if entrada == "0":
-
-			print("\nOperação cancelada.")
-
-			conexao.close()
+			print("\nNenhum ativo cadastrado.")
 
 			return
 
-		if not entrada.isdigit():
+		print("\nATIVOS:\n")
 
-			print("\nErro: digite apenas números.")
+		for ativo in ativos:
 
-			continue
+			print(
+				"ID:",
+				ativo[0],
+				"-",
+				ativo[1]
+			)
 
-		ativo_id = int(entrada)
+		print("\nDigite 0 para cancelar.")
 
-		cursor.execute("""
+		while True:
 
-		SELECT id
+			entrada = input("\nDigite o ID do ativo: ").strip()
 
-		FROM ativos
+			if entrada == "0":
 
-		WHERE id = ?
+				print("\nOperação cancelada.")
 
-		""", (ativo_id,))
+				return
 
-		ativo = cursor.fetchone()
+			if not entrada.isdigit():
 
-		if ativo:
-			break
+				print("\nErro: digite apenas números.")
 
-		print("\nID não encontrado.")
+				continue
 
-	cursor.execute("""
+			ativo_id = int(entrada)
 
-	SELECT
-		descricao,
-		severidade,
-		status
+			ativo = self.ativo_repo.buscar_por_id(ativo_id)
 
-	FROM vulnerabilidades
+			if ativo:
+				break
 
-	WHERE ativo_id = ?
+			print("\nID não encontrado.")
 
-	""", (ativo_id,))
+		vulnerabilidades = self.vuln_repo.listar_por_ativo_id(ativo_id)
 
-	vulnerabilidades = cursor.fetchall()
+		if len(vulnerabilidades) == 0:
 
-	if len(vulnerabilidades) == 0:
+			print("\nEste ativo não possui vulnerabilidades registradas.")
 
-		print("\nEste ativo não possui vulnerabilidades registradas.")
+		else:
 
-	else:
+			print("\nVULNERABILIDADES:\n")
 
-		print("\nVULNERABILIDADES:\n")
+			for vuln in vulnerabilidades:
 
-		for vuln in vulnerabilidades:
+				print("Descrição:", vuln[0])
 
-			print("Descrição:", vuln[0])
+				print("Severidade:", vuln[1])
 
-			print("Severidade:", vuln[1])
+				print("Status:", vuln[2])
 
-			print("Status:", vuln[2])
-
-			print("-" * 30)
-
-	conexao.close()
+				print("-" * 30)
